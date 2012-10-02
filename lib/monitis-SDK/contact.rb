@@ -1,50 +1,49 @@
-class Contact < Base
+class Contact < MonitisClient
    
-  def addContact(options = {})
-    post("addContact", options)
+  def add_contact(first, last, account, type, timezone, options={})
+    args = {firstName: first, lastName: last, account: account,
+            contactType: type, timezone: timezone}.merge(options)
+    addContact(args)
   end
 
-  def editContact(options = {})
-    pp post("editContact", options)
-    #	confirmContact(options["contactId"],response["data"]["confirmationKey"]) if  response["data"]["confirmationKey"]
-  end
-
-  def deleteContact(*args)
-    if args.size == 1 
-      options = {:contactId => args[0]}
+  def delete_contact(*args)
+    if args.length == 1
+      result = deleteContact(contactId: args.first)
+    elsif args.length == 2
+      result = deleteContact(account: args[0], contactType: args[1])
     else
-      options = {:account => args[0], :contactType => args[1]}
+      raise "delete contact takes 1 or 2 args"
     end
-    post("deleteContact", options)
+    result
   end
 
-  def confirmContact(contactId, confirmationKey)
-    options = {:contactId => contactId, :confirmationKey => confirmationKey}
-    post("confirmContact", options)
+  def  edit_contact(id, options={})
+    args = {contactId: id}.merge(options)
+    editContact(args)
   end
 
-  def activateContact(contactId)
-  	options = {:contactId => contactId}
-    post("contactActivate", options)
+  def confirm_contact(id, confirmation_key)
+    confirmContact(contactId: id, confirmationKey: confirmation_key)
   end
 
-  def deactivateContact(contactId)
-  	options = {:contactId => contactId}
-    post("contactDeactivate",options)
+  def activate_contact(contact_id)
+    contactActivate(contactId: contact_id)
   end
 
-  def getContactGroups
-    get("contactGroupList")
+  def deactivate_contact(contact_id)
+    contactDeactivate(contactId: contact_id)
   end
 
-  def getRecentAlerts(timezone, startDate, endDate, limit)
-    options = {
-      :timezone => timezone,
-      :startDate => startDate.to_i,
-      :endDate => endDate.to_i,
-      :limit => limit
-    }
-    get("recentAlerts",options)
+  def contact_groups()
+    contactGroupList
+  end
+
+  def contacts()
+    contactsList
+  end
+
+  def recent_alerts(options={})
+    recentAlerts(options)
   end
       
 end

@@ -1,28 +1,42 @@
-class Agents < Base 
-  
-  def getAgents(key)
-    options = {:keyRegExp => key}
-    get("agents", key)
+require 'net/http'
+
+class Agents < MonitisClient 
+
+  # # matches API defaults  
+  # def agents()
+  # end
+
+  def info(id, options={})
+    args = {agentId: id}.merge(options)
+    agentInfo(args)
   end
-  
-  def getAgentInfo(agentId, loadTests)
-    options = {:agentId => agentId, :loadTests => loadTests}
-    get("agentInfo",options)
+
+  def snapshot(options)
+    # vary based on args, choose allAgentsSnapshot or agentSnapshot
+    if options.has_key? :platform
+      result = allAgentsSnapshot(platform: options[:platform])
+    elsif options.has_key? :agentKey
+      result = agentSnapshot(agentKey: options[:agentKey])
+    else
+      raise "snapshot requires platform or agentKey"
+    end
+    result
   end
-  
-  def getAllAgentsSnapshot(platform = nil, tag = nil)
-    options = {:platform => platform, :tag => tag, :timezone => Time.now.gmt_offset / 60}
-    get("allAgentsSnapshot", options)
+
+  def delete(options={})
+    # vary based on args, either agentIds[] or keyRegExp
+    if options.class == Hash
+      deleteAgents(options)
+    else
+      # treat it as the agent id(s)
+      options = options.join(',') if options.class == Array
+      args = {agentIds: options}
+    end
+    deleteAgents(args)
   end
-  
-  def getAgentSnapshot(agentKey)
-    options = {:agentKey => agentKey, :timezone => Time.now.gmt_offset / 60}
-    get("agentSnapshot", options)    
-  end
-  
-  def deleteAgents(agentIds, keyRegExp)
-    options = {:agentIds => agentIds, :keyRegExp => keyRegExp}
-    post("deleteAgents",options)
+
+  def download(platform)
+    post_raw('downloadAgent', platform: platform)
   end
   
 end

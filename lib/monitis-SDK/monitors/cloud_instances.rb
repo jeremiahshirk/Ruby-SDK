@@ -1,13 +1,12 @@
-class CloudInstances < Base
+class CloudInstances < MonitisClient
 
-   def getCloudInstances    
-    options = {:timezoneoffset => Time.now.abs.gmtoff / 60}
-    get("cloudInstances", options)
-   end
+  def instances(options={})
+    get('cloudInstances', options)
+  end
 
-   def getCloudInstanceInfo(instanceId)
-     options = {:instanceId => instanceId, :timezoneoffset => Time.now.abs.gmtoff / 60}
-     get("cloudInstanceInfo", options)
-   end
+  def info(type, instance_id, options={})
+    args = {type: type, instanceId: instance_id}.merge(options)
+    get('cloudInstanceInfo', args)
+  end
 
 end

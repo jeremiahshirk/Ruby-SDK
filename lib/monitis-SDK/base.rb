@@ -1,13 +1,24 @@
+require 'httparty'
+require 'crack'
+require 'openssl'
+require 'base64'
+
+YAML::ENGINE.yamler = "syck"
+
 class Base 
 
   BASE_URL = "http://www.monitis.com/api"
   SANDBOX_URL = "http://sandbox.monitis.com/api"
   VERSION = "2"
+  debug = false
 
-  attr_accessor :apikey, :secretkey, :authtoken, :endpoint
+  attr_accessor :apikey, :secretkey, :authtoken, :endpoint, :validation,
+                :debug
    
   def initialize(apikey, secretkey, use_production = false, use_custom_monitor = false)
     @apikey, @secretkey = apikey, secretkey
+    @validation = 'HMACSHA1'
+    # @validation = 'token'
     if use_custom_monitor == false
       @endpoint = use_production ? BASE_URL : SANDBOX_URL
     else
@@ -15,55 +26,203 @@ class Base
     end
     @authtoken = getAuthToken
   end
- 
-  def get(action, options = {})
-    res = HTTParty.get(@endpoint, build_get_request(action, options))
-    parse_response(res)
+
+  def guess_http_method(method_name)
+    method_map = {
+      :contactGroupList => :get,
+      :downloadAgent => :post
+    }
+    exact_match = method_map.fetch method_name, nil
+    if exact_match
+      guess = exact_match
+    elsif method_name.match /^(add|edit|delete|confirm|contact|suspend|activate)[A-Z]/
+      guess = :post
+    else
+      guess = :get
+    end
+    guess
   end
-  
+
+  # automatically convert missing methods into raw API calls
+  # TODO, only accept if second arg is options hash
+  def method_missing( method_name, *args )
+    # puts "Auto-creating API method #{method_name}(#{args})"
+    http_method = guess_http_method method_name
+    if http_method == :get
+      result = get(method_name, options=args.first || {})
+    elsif http_method == :post
+      result = post(method_name, options=args.first || {})
+    else
+      raise "Unknown HTTP method"
+    end
+
+    if block_given?
+      result = yield result
+    end
+    result
+  end  
+
+  # def self.inherited(new_subclass)
+  #   puts "New subclass #{new_subclass} < #{self}"
+  # end
+
+  def status_warning(r_hash)
+    # return the warning message on any non-'ok' status
+    if   ((r_hash.has_key?('status')) && (r_hash['status'] != 'ok'))
+      result = r_hash['status']
+    else
+      result = nil
+    end
+    result
+  end
+
+  def raise_api_errors(monitis_response)
+    # some valid API responses return JSON arrays
+    # errors are always of the form {error: "message"}
+    if monitis_response.class == Hash
+      err = monitis_response.fetch('error', nil)
+      raise  "Monitis API Error: #{err}" if err
+      # warning = status_warning(monitis_response)
+      # raise "Monitis API Warning: #{warning}" if warning
+    end
+    monitis_response
+  end
+
+  def monitis_result(instance)
+    # if a result is a hash, append some convenience methods
+    if instance.class == Hash
+      def instance.status
+        self['status']
+      end
+
+      def instance.is_ok?
+        status == 'ok'
+      end
+    end
+    instance
+  end
+
+  def get_raw(action, options={})
+    unless options.instance_of? Hash
+      raise "GET options must be Hash-like"
+    end
+    query = build_request(action, options)
+    pp query if @debug
+    response = HTTParty.get @endpoint, query: query
+    pp response if @debug
+    response
+  end
+
+  def get(action, options = {})
+    response = get_raw(action, options)
+    parsed = raise_api_errors parse_response response
+    # pp parsed if @debug
+    if block_given?
+      result = yield parsed
+    else
+      result = parsed
+    end
+    monitis_result result
+  end
+
+  def post_raw(action, options = {})
+    unless options.instance_of? Hash
+      raise "POST options must be Hash-like"
+    end
+    body = build_request(action, options)
+    # pp body if @debug
+    response = HTTParty.post @endpoint, body: body
+    if @debug
+      pp response.request
+      pp response.body
+    end
+    response
+  end
+
   def post(action, options = {})
-  	res = HTTParty.post(@endpoint, :body => build_request(action, options))
-	  parse_response(res)
+    response = post_raw(action, options)
+	  parsed = raise_api_errors parse_response response
+    # pp parsed if @debug
+    if block_given?
+      result = yield parsed
+    else
+      result = parsed
+    end
+    monitis_result result
   end
 
   def parse_response(response)
-    if response.body
-      Crack::JSON.parse(response.body)
-    end  
+    # TODO Raise an exception if crack fails
+    # TODO Raise an exception if body is nil
+    Crack::JSON.parse(response.body) if response.body
+  end
+
+  def checksum(secretkey, request_params={})
+    params = request_params.clone
+    hmac_sha1 secretkey, params.each_pair.sort.join
+  end
+
+  def hmac_sha1(key, message)
+    digest = OpenSSL::Digest::Digest.new('sha1') 
+    Base64::encode64(OpenSSL::HMAC.digest digest, key, message).rstrip
   end
 
   def build_request(action, options={})
+    key = options.delete(:secretkey) || @secretkey
     options.merge!({
-         :apikey => @apikey,
-         :version => VERSION,
-         :validation => "token",
- 	       :timestamp => Time.now.strftime("%Y-%m-%d %H:%m:%S"),
-         :authToken => @authtoken,
-         :action => action
-    })
+         :apikey => @apikey, :version => VERSION, :validation => @validation,
+ 	       :timestamp => Time.now.utc.strftime("%Y-%m-%d %H:%M:%S"),
+         :action => action })
+
+    if @validation == 'token'
+      options.merge!(authToken: @authtoken)
+    elsif @validation == 'HMACSHA1'
+      options.merge!(checksum: checksum(key, options))
+    else
+      raise "Invalid validation method: #{@validation}"
+    end
+
+    options
   end
   
-  def build_get_request(action, options = {})
-    options = {:query => build_request(action, options)}
-   # pp options
-  end  
-    
-  def getAuthToken()
-    if @authtoken.nil?
-      options = {
-        :query => {
-          :action => "authToken",
-          :apikey => @apikey,
-          :secretkey => @secretkey
-        }
-      }
-      res = HTTParty.get(@endpoint, options)
-      @authtoken = parse_response(res).fetch("authToken")
-    else
-      @authtoken
-    end
-    pp @authtoken
+  def new_auth_token()
+    query = { action: 'authToken', apikey: @apikey, secretkey: @secretkey }
+    res = HTTParty.get(@endpoint, query: query)
+    parse_response(res).fetch("authToken")
   end
 
-#    Crack::JSON.parse(json).fetch("authToken")
+  def getAuthToken()
+    @authtoken ||= new_auth_token
+  end
+
+end
+
+class MonitisClient < Base
+
+  def initialize(options={})
+    use_production = options.fetch(:use_production, false)
+    use_custom_monitor = options.fetch(:use_custom_monitor, false)
+    if use_production
+      apikey_env_name = 'MONITIS_APIKEY'
+      secretkey_env_name = 'MONITIS_SECRETKEY'
+    else
+      apikey_env_name = 'MONITIS_SANDBOX_APIKEY'
+      secretkey_env_name = 'MONITIS_SANDBOX_SECRETKEY'
+    end
+
+    apikey = options.fetch(:apikey, ENV[apikey_env_name])
+    secretkey = options.fetch(:apikey, ENV[secretkey_env_name])
+
+    super(apikey, secretkey, use_production, use_custom_monitor)
+  end
+end
+
+class MonitisResponse < Hash
+  def status()
+    self['status']
+  end
+
+  def error()
+    self['error']
+  end
 end

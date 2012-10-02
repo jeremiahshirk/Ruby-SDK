@@ -1,12 +1,20 @@
-class TransactionMonitor < Base
+class VisitorTrackerMonitors < MonitisClient
 
-  def getVisitorTrackers
-    get("visitorTrackingTests")
+  def results(site_id, year, month, day, options={})
+    args = {siteId: site_id, year: year, month: month, day:day}.merge(options)
+    get('visitorTrackingResults', args)
   end
-    
-  def getVisitorTrackerInfo(siteId)
-    options = {:siteId => siteId}
-    get("visitorTrackingInfo", options)
+
+  def info(site_id)
+    get('visitorTrackingInfo', {siteId: site_id})
+  end
+
+  def monitors
+    get('visitorTrackingTests')
+  end
+
+  def sites
+    get('visitorTrackingTests').collect {|x| x[0]}
   end
 
 end

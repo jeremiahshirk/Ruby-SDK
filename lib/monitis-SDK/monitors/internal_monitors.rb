@@ -1,17 +1,27 @@
-class InternalMonitors < Base
-  
-  def deleteMonitors(testIds, type)
-    options={:testIds=>testIds,:type=>type}
-    post("deleteInternalMonitors",options)      
+class InternalMonitors < MonitisClient
+
+  def initialize(options={})
+    @type_map = { 
+                  process: 1,
+                  drive: 2,
+                  memory: 3, 
+                  agentHttpTest: 4,
+                  agentPingTest: 5,
+                  load: 6,
+                  cpu: 7
+                }
+    super(options)
   end
 
-  def getMonitors(types = nil, tag = nil, tagRegExp = nil)     
-    options = {
-      :types => types,
-      :tag => tag,
-      :tagRegExp => tagRegExp
-    }
-    get("internalMonitors", options)
+  def delete(test_ids, type)
+    type = @type_map.fetch(type) if type.class == Symbol
+    test_ids = test_ids.join(',') if test_ids.class == Array
+    args = {testIds: test_ids, type: type}
+    deleteInternalMonitors(args)
+  end
+
+  def monitors(options={})
+    internalMonitors(options)
   end
 
 end  

@@ -1,42 +1,60 @@
-class CustomMonitors < Base
-    
-  def addMonitor(options = {})
-    post("addMonitor", options)
+class CustomMonitors < MonitisClient
+  
+  def initialize(options={})
+    options[:use_custom_monitor] = true
+    super(options)
   end
 
-  def editMonitor(options = {})    
-    post("editMonitor", options)
+  def add(result_params, name, tag, options={})
+    args = {resultParams: result_params, name: name, tag: tag}.merge(options)
+    addMonitor(args)
   end
 
-  def deleteMonitors(monitorIds)
-   options = {:monitorId => monitorIds}   
-   post("deleteMonitor",options)    
+  def edit(monitor_id, options={})
+    args = {monitorId: monitor_id}.merge(options)
+    editMonitor(args)
   end
 
-  def getMonitors(tag)
-    options = {:tag => tag}
-    get("getMonitors", options)
+  def delete(monitor_id, options={})
+    args={monitorId: monitor_id}.merge(options)
+    deleteMonitor(args)
   end
 
-  def getMonitorInfo(testId, excludeHidden = false)
-    options = {:testId => testId, :excludeHidden => excludeHidden}    
-    get("testinfo", options)
+  def add_result(monitor_id, checktime, results, options={})
+    args = {monitorId: monitor_id, checktime: checktime, 
+            results: results}.merge(options)
+    addResult(args)
   end
 
-  def getMonitorResults(testIId, day, month, year, locationIds = nil, timezone = nil)
-    options = {
-      :testId => testId,
-      :day => day,
-      :month => month,
-      :year => year,
-      :locationIds => locationIds,
-      :timezone => timezone
-    }
-    get("testresult", options)
+  def add_additional_results(monitor_id, checktime, results, options={})
+    args = {monitorId: monitor_id, checktime: checktime,
+            results: results}.merge(options)
+    addAdditionalResults(args)
   end
 
-  def addMonitorResult(options = {})	
-    post("addResult", :options)	
+  def monitors()
+    getMonitors
+  end
+
+  def info(monitor_id, options={})
+    args = {monitorId: monitor_id}.merge(options)
+    getMonitorInfo(args)
+  end
+
+  def results(monitor_id, year, month, day, options={})
+    args = {monitorId: monitor_id, year: year, month: month,
+            day: day}.merge(options)
+    getMonitorResults(args)
+  end
+
+  def report(monitor_id, from, to, options={})
+    args = {monitorId: monitor_id, dateFrom: from, dateTo: to}.merge(options)
+    getReport(args)
+  end
+
+  def additional_results(monitor_id, checktime, options={})
+    args = {monitorId: monitor_id, checktime: checktime}.merge(options)
+    getAdditionalResults(args)
   end
  
 end

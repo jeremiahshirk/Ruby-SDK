@@ -6,12 +6,13 @@ describe User do
     @secretkey = ENV['MONITIS_SECRETKEY']
     @username = ENV['MONITIS_USER']
     @password = ENV['MONITIS_PASS']
-    @user = User.new(@apikey, @secretkey, true, false)
+    @user = User.new use_production: true
   end
 
   it 'should be able to get the API key' do
     @user.apikey(@username, @password).should == @apikey
   end
+
 
   it 'should be able to get the secret key' do
     @user.secretkey(@apikey).should == @secretkey
