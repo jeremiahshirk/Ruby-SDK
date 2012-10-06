@@ -12,9 +12,6 @@ describe Agents do
     @agent_id = @agents.agents.first['id']
   end
 
-  after :each do
-  end
-
   it 'should get a list of all agents' do
     result = @agents.agents
     result.class.should == Array

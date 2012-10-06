@@ -3,18 +3,45 @@ require 'crack'
 require 'openssl'
 require 'base64'
 
+# Use Syck engine for parsing JSON responses
 YAML::ENGINE.yamler = "syck"
 
+# Base class for communcation with Monitis API
 class Base 
 
+  # default URL for Monitis API
   BASE_URL = "http://www.monitis.com/api"
+  # default URL for Monitis API sandbox
   SANDBOX_URL = "http://sandbox.monitis.com/api"
+  # Monitis API version
   VERSION = "2"
+  # Set Monitis.debug to true to enable debugging output
   debug = false
 
-  attr_accessor :apikey, :secretkey, :authtoken, :endpoint, :validation,
-                :debug
-   
+  # User's Monitis API Key
+  attr_accessor :apikey
+  # User's Monitis secret key
+  attr_accessor :secretkey
+  # Auth token for user
+  attr_accessor :authtoken
+  # The API endpoint
+  attr_accessor :endpoint
+  # Type of API validation, either 'token' or 'HMACSHA1'
+  attr_accessor :validation
+  # Print debugging information, if true
+  attr_accessor :debug
+
+  # Create a new instance
+  #
+  # === Required arguments
+  # * apikey - User's Monitis API key
+  # * secretkey - User's Monitis secret key
+  #
+  # === Optional arguments
+  # * use_production - Use production endpoint if true, sandbox otherwise.
+  #   Default is false.
+  # * use_custom_monitor - Use the Custom Monitor endpoint if true, or the
+  #   standard endpoint otherwise. Default is false.
   def initialize(apikey, secretkey, use_production = false, use_custom_monitor = false)
     @apikey, @secretkey = apikey, secretkey
     @validation = 'HMACSHA1'
@@ -27,6 +54,113 @@ class Base
     @authtoken = getAuthToken
   end
 
+  # Monitis API HTTP GET, unparsed response
+  #
+  # === Required arguments
+  # * action - action parameter to Monitis API request
+  #
+  # === Optional arguments
+  # * options - Hash containing key-value pairs corresponding to 
+  #   Monitis API parameter names and values
+  def get_raw(action, options={})
+    unless options.instance_of? Hash
+      raise "GET options must be Hash-like"
+    end
+    query = build_request(action, options)
+    pp query if @debug
+    response = HTTParty.get @endpoint, query: query
+    pp response if @debug
+    response
+  end
+
+  # Monitis API HTTP GET, with parsed JSON response
+  #
+  # === Required arguments
+  # * action - action parameter to Monitis API request
+  #
+  # === Optional arguments
+  # * options - Hash containing key-value pairs corresponding to 
+  #   Monitis API parameter names and values
+  # * If an optional block is provided, it will be executed with
+  #   the parsed JSON response as its argument. The result
+  #   of that block will be returned by this method.
+  def get(action, options = {})
+    response = get_raw(action, options)
+    parsed = raise_api_errors parse_response response
+    # pp parsed if @debug
+    if block_given?
+      result = yield parsed
+    else
+      result = parsed
+    end
+    monitis_result result
+  end
+
+  # Monitis API HTTP POST, unparsed response
+  #
+  # === Required arguments
+  # * action - action parameter to Monitis API request
+  #
+  # === Optional arguments
+  # * options - Hash containing key-value pairs corresponding to 
+  #   Monitis API parameter names and values
+  def post_raw(action, options = {})
+    unless options.instance_of? Hash
+      raise "POST options must be Hash-like"
+    end
+    body = build_request(action, options)
+    # pp body if @debug
+    response = HTTParty.post @endpoint, body: body
+    if @debug
+      pp response.request
+      pp response.body
+    end
+    response
+  end
+
+  # Monitis API HTTP POST, with parsed JSON response
+  #
+  # === Required arguments
+  # * action - action parameter to Monitis API request
+  #
+  # === Optional arguments
+  # * options - Hash containing key-value pairs corresponding to 
+  #   Monitis API parameter names and values
+  # * If an optional block is provided, it will be executed with
+  #   the parsed JSON response as its argument. The result
+  #   of that block will be returned by this method.
+  def post(action, options = {})
+    response = post_raw(action, options)
+    parsed = raise_api_errors parse_response response
+    # pp parsed if @debug
+    if block_given?
+      result = yield parsed
+    else
+      result = parsed
+    end
+    monitis_result result
+  end
+
+  # Base64-encoded RFC 2104-compliant HMAC signature of the parameters 
+  # string encrypted with secret key
+  def checksum(secretkey, request_params={})
+    params = request_params.clone
+    hmac_sha1 secretkey, params.each_pair.sort.join
+  end
+
+  # Get a new auth token for the instance's API and secret keys
+  def new_auth_token()
+    query = { action: 'authToken', apikey: @apikey, secretkey: @secretkey }
+    res = HTTParty.get(@endpoint, query: query)
+    parse_response(res).fetch("authToken")
+  end
+
+  private
+
+  # Guess which HTTP method the API call needs when picked up by missing_method
+  #
+  # === Required arguments
+  # * method_name
   def guess_http_method(method_name)
     method_map = {
       :contactGroupList => :get,
@@ -43,10 +177,10 @@ class Base
     guess
   end
 
-  # automatically convert missing methods into raw API calls
-  # TODO, only accept if second arg is options hash
+  # Automatically convert missing methods into raw API calls
   def method_missing( method_name, *args )
-    # puts "Auto-creating API method #{method_name}(#{args})"
+    # TODO, only accept if second arg is options hash
+    puts "Auto-creating API method #{method_name}(#{args})"
     http_method = guess_http_method method_name
     if http_method == :get
       result = get(method_name, options=args.first || {})
@@ -61,10 +195,6 @@ class Base
     end
     result
   end  
-
-  # def self.inherited(new_subclass)
-  #   puts "New subclass #{new_subclass} < #{self}"
-  # end
 
   def status_warning(r_hash)
     # return the warning message on any non-'ok' status
@@ -102,64 +232,10 @@ class Base
     instance
   end
 
-  def get_raw(action, options={})
-    unless options.instance_of? Hash
-      raise "GET options must be Hash-like"
-    end
-    query = build_request(action, options)
-    pp query if @debug
-    response = HTTParty.get @endpoint, query: query
-    pp response if @debug
-    response
-  end
-
-  def get(action, options = {})
-    response = get_raw(action, options)
-    parsed = raise_api_errors parse_response response
-    # pp parsed if @debug
-    if block_given?
-      result = yield parsed
-    else
-      result = parsed
-    end
-    monitis_result result
-  end
-
-  def post_raw(action, options = {})
-    unless options.instance_of? Hash
-      raise "POST options must be Hash-like"
-    end
-    body = build_request(action, options)
-    # pp body if @debug
-    response = HTTParty.post @endpoint, body: body
-    if @debug
-      pp response.request
-      pp response.body
-    end
-    response
-  end
-
-  def post(action, options = {})
-    response = post_raw(action, options)
-	  parsed = raise_api_errors parse_response response
-    # pp parsed if @debug
-    if block_given?
-      result = yield parsed
-    else
-      result = parsed
-    end
-    monitis_result result
-  end
-
   def parse_response(response)
     # TODO Raise an exception if crack fails
     # TODO Raise an exception if body is nil
     Crack::JSON.parse(response.body) if response.body
-  end
-
-  def checksum(secretkey, request_params={})
-    params = request_params.clone
-    hmac_sha1 secretkey, params.each_pair.sort.join
   end
 
   def hmac_sha1(key, message)
@@ -185,20 +261,16 @@ class Base
     options
   end
   
-  def new_auth_token()
-    query = { action: 'authToken', apikey: @apikey, secretkey: @secretkey }
-    res = HTTParty.get(@endpoint, query: query)
-    parse_response(res).fetch("authToken")
-  end
-
   def getAuthToken()
     @authtoken ||= new_auth_token
   end
 
 end
 
+# Extend the Base class with automatic keys
 class MonitisClient < Base
 
+  # Create new MonitisClient instance
   def initialize(options={})
     use_production = options.fetch(:use_production, false)
     use_custom_monitor = options.fetch(:use_custom_monitor, false)
@@ -217,11 +289,15 @@ class MonitisClient < Base
   end
 end
 
+# Extend the Hash returned by many Monitis API calls
 class MonitisResponse < Hash
+
+  # Return status message
   def status()
     self['status']
   end
 
+  # Return error message
   def error()
     self['error']
   end

@@ -73,7 +73,7 @@ describe CustomMonitors do
   end
 
   it 'should get additional results' do
-    result = @custom.additional_results(@test_id, checktime)
+    result = @custom.additional_results(@test_id, checktime: checktime)
     result.class.should == Array
   end
 end
