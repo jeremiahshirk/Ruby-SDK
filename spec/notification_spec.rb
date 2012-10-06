@@ -19,7 +19,8 @@ describe Notification do
   end
 
   it 'should get notification rules' do
-    result = @notification.notification_rules(@monitor_id, 'custom')
+    args = {monitorId: @monitor_id, monitorType: 'custom'}
+    result = @notification.notification_rules(args)
     result.class.should == Array
   end
 

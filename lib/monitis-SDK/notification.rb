@@ -98,12 +98,10 @@ class Notification < MonitisClient
 
   # Get notification rules
   #
-  # === Required arguments
-  #
   # === Optional arguments
-  # * id - id of the monitor for which the rules were defined
-  # * name - description
-  # * monitor_type - description
+  # * monitorId - id of the monitor for which the rules were defined
+  # * contactId - id of the contact for which the rules were defined
+  # * monitorType - Valid values are: 
   #   external,
   #   transaction,
   #   fullPageLoad,
@@ -115,8 +113,7 @@ class Notification < MonitisClient
   #   agentPingTest,
   #   agentHttpTest,
   #   custom
-  # * contact_id - id of the contact for which the rules were defined
-  def notification_rules(id, type)
-    get('getNotificationRules', monitorId: id, monitorType: type)
+  def notification_rules(options={})
+    get('getNotificationRules', options)
   end
 end
