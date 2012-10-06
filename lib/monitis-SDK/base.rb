@@ -157,25 +157,25 @@ class Base
 
   private
 
-  # Guess which HTTP method the API call needs when picked up by missing_method
-  #
-  # === Required arguments
-  # * method_name
-  def guess_http_method(method_name)
-    method_map = {
-      :contactGroupList => :get,
-      :downloadAgent => :post
-    }
-    exact_match = method_map.fetch method_name, nil
-    if exact_match
-      guess = exact_match
-    elsif method_name.match /^(add|edit|delete|confirm|contact|suspend|activate)[A-Z]/
-      guess = :post
-    else
-      guess = :get
-    end
-    guess
-  end
+  # # Guess which HTTP method the API call needs when picked up by missing_method
+  # #
+  # # === Required arguments
+  # # * method_name
+  # def guess_http_method(method_name)
+  #   method_map = {
+  #     :contactGroupList => :get,
+  #     :downloadAgent => :post
+  #   }
+  #   exact_match = method_map.fetch method_name, nil
+  #   if exact_match
+  #     guess = exact_match
+  #   elsif method_name.match /^(add|edit|delete|confirm|contact|suspend|activate)[A-Z]/
+  #     guess = :post
+  #   else
+  #     guess = :get
+  #   end
+  #   guess
+  # end
 
   # # Automatically convert missing methods into raw API calls
   # def method_missing( method_name, *args )
