@@ -2,7 +2,7 @@ require 'monitis-SDK'
 
 describe Base do
   before :each do
-    @prod = MonitisClient.new(use_production: true)
+    @prod = Contact.new(use_production: true)
   end
 
   it 'should get a new authToken' do
@@ -11,14 +11,14 @@ describe Base do
   end
 
   it 'should create implicit API GET methods' do
-    contacts = @prod.contactsList
+    contacts = @prod.contacts
     contacts.class.should == Array
   end
 
   it 'should create implicit API POST methods' do
-    contacts = @prod.contactsList
+    contacts = @prod.contacts
     contact_id = contacts[1]['contactId']
-    response = @prod.editContact(contactId: contact_id)
+    response = @prod.edit_contact(contact_id)
     response['status'].should == 'ok'
   end
 

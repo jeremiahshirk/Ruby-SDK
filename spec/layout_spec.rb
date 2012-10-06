@@ -28,8 +28,8 @@ describe Layout do
   end
 
   it 'should be able to add a module to a page' do
-    custom = MonitisClient.new(use_custom_monitor: true)
-    custom_id = custom.getMonitors.first['id']
+    custom = CustomMonitors.new(use_custom_monitor: true)
+    custom_id = custom.monitors.first['id']
     result = @layout.add_page_module("CustomMonitor", @test_page_ids.first,
                                      1, 1, custom_id)
     result['status'].should == 'ok'
@@ -41,8 +41,8 @@ describe Layout do
   end
 
   it 'should be able to delete a module from a page' do
-    custom = MonitisClient.new(use_custom_monitor: true)
-    custom_id = custom.getMonitors.first['id']
+    custom = CustomMonitors.new(use_custom_monitor: true)
+    custom_id = custom.monitors.first['id']
     id = @layout.add_page_module("CustomMonitor", @test_page_ids.first,
                                      1, 1, custom_id)['data']['pageModuleId']
     result = @layout.delete_page_module(id)

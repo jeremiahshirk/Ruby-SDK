@@ -41,7 +41,7 @@ class Contact < MonitisClient
   def add_contact(first, last, account, type, timezone, options={})
     args = {firstName: first, lastName: last, account: account,
             contactType: type, timezone: timezone}.merge(options)
-    addContact(args)
+    post('addContact', args)
   end
 
   # Delete a contact
@@ -64,9 +64,9 @@ class Contact < MonitisClient
   #   11 - URL
   def delete_contact(*args)
     if args.length == 1
-      result = deleteContact(contactId: args.first)
+      result = post('deleteContact', contactId: args.first)
     elsif args.length == 2
-      result = deleteContact(account: args[0], contactType: args[1])
+      result = post('deleteContact', account: args[0], contactType: args[1])
     else
       raise "delete contact takes 1 or 2 args"
     end
@@ -109,7 +109,7 @@ class Contact < MonitisClient
   #   HTML formatted alerts
   def  edit_contact(id, options={})
     args = {contactId: id}.merge(options)
-    editContact(args)
+    post('editContact', args)
   end
 
   # Confirm a contact
@@ -118,7 +118,7 @@ class Contact < MonitisClient
   # * id - contact ID
   # * confirmation_key - confirmation key of the contact
   def confirm_contact(id, confirmation_key)
-    confirmContact(contactId: id, confirmationKey: confirmation_key)
+    post('confirmContact', contactId: id, confirmationKey: confirmation_key)
   end
 
   # Activate a contact
@@ -126,7 +126,7 @@ class Contact < MonitisClient
   # === Required arguments
   # * contact_id - ID of the contact to activate
   def activate_contact(contact_id)
-    contactActivate(contactId: contact_id)
+    post('contactActivate', contactId: contact_id)
   end
 
   # Deactivate a contact
@@ -134,17 +134,17 @@ class Contact < MonitisClient
   # === Required arguments
   # * contact_id - ID of the contact to deactivate
   def deactivate_contact(contact_id)
-    contactDeactivate(contactId: contact_id)
+    post('contactDeactivate', contactId: contact_id)
   end
 
   # Get all groups of contacts for the user
   def contact_groups()
-    contactGroupList
+    get('contactGroupList')
   end
 
   # Get all contacts for the user
   def contacts()
-    contactsList
+    get('contactsList')
   end
 
   # Get recent alerts history
@@ -158,7 +158,7 @@ class Contact < MonitisClient
   # * endDate - end date to get results for
   # * limit - maximum number of alerts to get
   def recent_alerts(options={})
-    recentAlerts(options)
+    get('recentAlerts', options)
   end
       
 end

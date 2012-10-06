@@ -68,7 +68,7 @@ class Notification < MonitisClient
       failureCount: failure_count, comparingMethod: comparing_method
       }.merge(options)
 
-    addNotificationRule(args)
+    post('addNotificationRule', args)
   end
 
   # Delete notification rules
@@ -93,7 +93,7 @@ class Notification < MonitisClient
     args = {contactIds: contact_ids, 
             monitorId: monitor_id,
             monitorType: monitor_type}
-    deleteNotificationRule(args)
+    post('deleteNotificationRule', args)
   end
 
   # Get notification rules
@@ -117,6 +117,6 @@ class Notification < MonitisClient
   #   custom
   # * contact_id - id of the contact for which the rules were defined
   def notification_rules(id, type)
-    getNotificationRules(monitorId: id, monitorType: type)
+    get('getNotificationRules', monitorId: id, monitorType: type)
   end
 end

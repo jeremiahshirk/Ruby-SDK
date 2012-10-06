@@ -18,7 +18,7 @@ describe DriveMonitors do
 
   after :each do
     if @mon_ids.length > 0
-      @mon.deleteInternalMonitors(testIds: @mon_ids.join(','), type:2)
+      @mon.delete(@mon_ids.join(','))
     end
   end
 

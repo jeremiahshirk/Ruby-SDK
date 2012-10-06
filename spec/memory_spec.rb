@@ -17,7 +17,7 @@ describe MemoryMonitors do
   end
 
   after :each do
-    @mon.deleteInternalMonitors(testIds: @mon_ids.join(','), type:3)
+    @mon.delete(@mon_ids.join(','))
   end
 
   def add_monitor

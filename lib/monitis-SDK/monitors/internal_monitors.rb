@@ -35,12 +35,12 @@ class InternalMonitors < MonitisClient
     type = @type_map.fetch(type) if type.class == Symbol
     test_ids = test_ids.join(',') if test_ids.class == Array
     args = {testIds: test_ids, type: type}
-    deleteInternalMonitors(args)
+    post('deleteInternalMonitors', args)
   end
 
   # List internal monitors
   def monitors(options={})
-    internalMonitors(options)
+    get('internalMonitors', options)
   end
 
 end  

@@ -20,7 +20,7 @@ describe Contact do
   end
 
   after :each do
-    @test_contact_ids.each { |id| @contact.deleteContact(contactId: id)}
+    @test_contact_ids.each { |id| @contact.delete_contact(id)}
   end
 
   it 'should be able to add a contact' do

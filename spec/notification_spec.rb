@@ -10,13 +10,12 @@ describe Notification do
     @notification = Notification.new
     # create custom monitor
     @custom = CustomMonitors.new
-    @monitor_id = @custom.addMonitor(
-      resultParams:'t:t:s:4',name:temp_name,tag:'t')['data']
+    @monitor_id = @custom.add('t:t:s:4', temp_name, 't')['data']
     @contact_id = Contact.new.contacts.first['contactId']
   end
 
   after :each do
-    @custom.deleteMonitor(monitorId: @monitor_id)
+    @custom.delete(@monitor_id)
   end
 
   it 'should get notification rules' do

@@ -30,7 +30,7 @@ class ExternalMonitors < MonitisClient
     args = {type: type, name: name, url: url, interval: interval,
             locationIds: location_ids, tag: tag}
             .merge(options)
-    addExternalMonitor(args)
+    post('addExternalMonitor', args)
   end
 
   # Edit an external monitor
@@ -49,7 +49,7 @@ class ExternalMonitors < MonitisClient
   def edit(test_id, name, url, location_ids, timeout, tag, options={})
     args = {testId: test_id, name: name, url: url, locationIds: location_ids,
             timeout: timeout, tag: tag}.merge(options)
-    editExternalMonitor(args)
+    post('editExternalMonitor', args)
   end
 
   # Delete an external monitor
@@ -59,7 +59,7 @@ class ExternalMonitors < MonitisClient
   def delete(test_ids, options={})
     test_ids = test_ids.join(',') if test_ids.class == Array
     args = {testIds: test_ids}.merge(options)
-    deleteExternalMonitor(args)
+    post('deleteExternalMonitor', args)
   end
 
   # Suspend an external monitor
@@ -75,11 +75,11 @@ class ExternalMonitors < MonitisClient
     # if options is a hash, then treat it as options
     # otherwise, treat it as a monitor id or an array of them
     if options.class == Hash
-      result = suspendExternalMonitor(options)
+      result = post('suspendExternalMonitor', options)
     elsif options.class == Array
-      result = suspendExternalMonitor(monitorIds: options.join(','))
+      result = post('suspendExternalMonitor', monitorIds: options.join(','))
     else
-      result = suspendExternalMonitor(monitorIds: options)
+      result = post('suspendExternalMonitor', monitorIds: options)
     end
     result
   end
@@ -95,11 +95,11 @@ class ExternalMonitors < MonitisClient
   def activate(options={})
     # either monitorIds or tag is required
     if options.class == Hash
-      result = activateExternalMonitor(options)
+      result = post('activateExternalMonitor', options)
     elsif options.class == Array
-      result = activateExternalMonitor(monitorIds: options.join(','))
+      result = post('activateExternalMonitor', monitorIds: options.join(','))
     else
-      result = activateExternalMonitor(monitorIds: options)
+      result = post('activateExternalMonitor', monitorIds: options)
     end
     result
   end
@@ -119,9 +119,9 @@ class ExternalMonitors < MonitisClient
     # use api call tests if no tag specified
     # use api call tagtests if a tag is specified
     if tag == nil
-      result = tests()
+      result = get('tests')
     else
-      result = tagtests(tag: tag)
+      result = get('tagtests', tag: tag)
     end
     result
   end
@@ -134,7 +134,7 @@ class ExternalMonitors < MonitisClient
   # === Optional arguments
   def info(test_id, options={})
     args = {testId: test_id}.merge(options)
-    testinfo(args)
+    get('testinfo', args)
   end
 
   # Get results for the specified external monitor
@@ -153,7 +153,7 @@ class ExternalMonitors < MonitisClient
   def results(test_id, day, month, year, options={})
     args = {testId: test_id, day: day, month: month, year: year}
            .merge(options)
-    testresult(args)
+    get('testresult', args)
   end
 
   # Get snapshot for the external monitor
@@ -162,7 +162,7 @@ class ExternalMonitors < MonitisClient
   # * locationIds - comma separated ids of the locations for which results
   #   should be retrieved
   def snapshot(options={})
-    testsLastValues(options)
+    get('testsLastValues', options)
   end
 
   # Get tags for the external monitors

@@ -17,7 +17,7 @@ describe HTTPMonitors do
   end
 
   after :each do
-    @mon.deleteInternalMonitors(testIds: @mon_ids.join(','), type:4)
+    @mon.delete(@mon_ids.join(','))
   end
 
   def add_monitor

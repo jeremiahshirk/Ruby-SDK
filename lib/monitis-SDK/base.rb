@@ -177,24 +177,24 @@ class Base
     guess
   end
 
-  # Automatically convert missing methods into raw API calls
-  def method_missing( method_name, *args )
-    # TODO, only accept if second arg is options hash
-    puts "Auto-creating API method #{method_name}(#{args})"
-    http_method = guess_http_method method_name
-    if http_method == :get
-      result = get(method_name, options=args.first || {})
-    elsif http_method == :post
-      result = post(method_name, options=args.first || {})
-    else
-      raise "Unknown HTTP method"
-    end
+  # # Automatically convert missing methods into raw API calls
+  # def method_missing( method_name, *args )
+  #   # TODO, only accept if second arg is options hash
+  #   puts "Auto-creating API method #{method_name}(#{args})"
+  #   http_method = guess_http_method method_name
+  #   if http_method == :get
+  #     result = get(method_name, options=args.first || {})
+  #   elsif http_method == :post
+  #     result = post(method_name, options=args.first || {})
+  #   else
+  #     raise "Unknown HTTP method"
+  #   end
 
-    if block_given?
-      result = yield result
-    end
-    result
-  end  
+  #   if block_given?
+  #     result = yield result
+  #   end
+  #   result
+  # end  
 
   def status_warning(r_hash)
     # return the warning message on any non-'ok' status

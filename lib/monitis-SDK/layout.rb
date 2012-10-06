@@ -4,6 +4,11 @@
 # optional  parameters, documented at http://www.monitis.com/api/api.html
 class Layout < MonitisClient
 
+  # Get all of a user's pages
+  def pages
+    get('pages')
+  end
+
   # Add a page to a user's layout
   #
   # === Required arguments
@@ -13,7 +18,7 @@ class Layout < MonitisClient
   # * columnCount - count of columns on the page
   def add_page(title, options={})
     arg_opts = {title: title}.merge(options)
-    addPage(arg_opts)
+    post('addPage', arg_opts)
   end
 
   # Delete a page from the user's layout
@@ -21,7 +26,7 @@ class Layout < MonitisClient
   # === Required arguments
   # * page_id - ID of the page to delete
   def delete_page(page_id)
-    deletePage(pageId: page_id)
+    post('deletePage', pageId: page_id)
   end
 
   # Add a module to a page
@@ -50,7 +55,7 @@ class Layout < MonitisClient
   def add_page_module(name, id, column, row, data_module_id, options={})
     arg_opts = {moduleName: name, pageId: id, column: column, row: row,
                 dataModuleId: data_module_id}.merge(options)
-    addPageModule(arg_opts)
+    post('addPageModule', arg_opts)
   end
 
   # Delete a module from a page
@@ -58,7 +63,7 @@ class Layout < MonitisClient
   # === Required arguments
   # * page_module_id - ID of the module to delete
   def delete_page_module(page_module_id)
-    deletePageModule(pageModuleId: page_module_id)
+    post('deletePageModule', pageModuleId: page_module_id)
   end
 
   # Get all modules for the specified page
@@ -66,7 +71,7 @@ class Layout < MonitisClient
   # === Required arguments
   # * page_name - name of the page to get modules for
   def page_modules(page_name)
-    pageModules(pageName: page_name)
+    get('pageModules', pageName: page_name)
   end
   
 end
