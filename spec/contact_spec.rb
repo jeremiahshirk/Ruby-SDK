@@ -9,7 +9,7 @@ describe Contact do
   before :each do
     @contact = Contact.new
     # @contact.debug = true
-    result = @contact.add_contact(
+    result = @contact.add(
       'First', 'Last', "#{temp_name}@test.com", 1, -300)
     begin
       @test_contact_ids = [result['data']['contactId']]
@@ -20,49 +20,50 @@ describe Contact do
   end
 
   after :each do
-    @test_contact_ids.each { |id| @contact.delete_contact(id)}
+    @test_contact_ids.each { |id| @contact.delete(contactId: id)}
   end
 
   it 'should be able to add a contact' do
-    result = @contact.add_contact(
+    result = @contact.add(
       'First', 'Last', "#{temp_name}@test.com", 1, -300)
     @test_contact_ids << result['data']['contactId']
     result['status'].should == 'ok'
   end
 
   it 'should be able to delete a contact' do
-    result = @contact.delete_contact(@test_contact_ids.first)
+    args = {contactId: @test_contact_ids.first}
+    result = @contact.delete(args)
     result['status'].should == 'ok'
   end
 
   it 'should be able to edit a contact' do
-    result = @contact.edit_contact(@test_contact_ids.first, firstName: 'Foo')
+    result = @contact.edit(@test_contact_ids.first, firstName: 'Foo')
     result['status'].should == 'ok'
   end
 
   it 'should be able to confirm a contact' do
-    result = @contact.add_contact(
+    result = @contact.add(
     'First', 'Last', "#{temp_name}@test.com", 1, -300)
     @test_contact_ids << result['data']['contactId']
     id = result['data']['contactId']
     key = result['data']['confirmationKey']
 
-    result = @contact.confirm_contact(id, key)
+    result = @contact.confirm(id, key)
     result['status'].should == 'ok'
   end
 
   it 'should be able to activate a contact' do
-    result = @contact.activate_contact(@test_contact_ids.first)
+    result = @contact.activate(@test_contact_ids.first)
     result['status'].should == 'ok'
   end
 
   it 'should be able to deactivate a contact' do
-    result = @contact.deactivate_contact(@test_contact_ids.first)
+    result = @contact.deactivate(@test_contact_ids.first)
     result['status'].should == 'ok'
   end
 
   it 'should get a list of contact groups' do
-    result = @contact.contact_groups
+    result = @contact.groups
     result.class.should == Array
   end
 

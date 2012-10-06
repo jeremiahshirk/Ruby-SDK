@@ -38,7 +38,7 @@ class Contact < MonitisClient
   #   E.g. United States, US or USA
   # * textType - could be "true" to get plain text alerts or "false" to get
   #   HTML formatted alerts
-  def add_contact(first, last, account, type, timezone, options={})
+  def add(first, last, account, type, timezone, options={})
     args = {firstName: first, lastName: last, account: account,
             contactType: type, timezone: timezone}.merge(options)
     post('addContact', args)
@@ -46,14 +46,15 @@ class Contact < MonitisClient
 
   # Delete a contact
   #
-  # === Required arguments
-  # * contact_id - ID of the contact to delete
+  # === Arguments
+  # Either contactId or account and contactType are required
+  # * contactId - ID of the contact to delete
   # * account - account information depending on contact type: 
   #   email address for mail contact,
   #   phone number for SMS, Phone Call and SMS and Call,
   #   account identifiers for ICQ, Google and Twitter,
   #   URL callback for URL.
-  # * type - Contact type, set to:
+  # * contactType - Contact type, set to:
   #   1 - for Email contact,
   #   2 - for SMS contact,
   #   3 - ICQ,
@@ -62,15 +63,8 @@ class Contact < MonitisClient
   #   9 - Phone Call,
   #   10 - SMS and Call,
   #   11 - URL
-  def delete_contact(*args)
-    if args.length == 1
-      result = post('deleteContact', contactId: args.first)
-    elsif args.length == 2
-      result = post('deleteContact', account: args[0], contactType: args[1])
-    else
-      raise "delete contact takes 1 or 2 args"
-    end
-    result
+  def delete(options={})
+    post('deleteContact', options)
   end
 
   # Edit a contact
@@ -107,7 +101,7 @@ class Contact < MonitisClient
   #   E.g. United States, US or USA
   # * textType - could be "true" to get plain text alerts or "false" to get
   #   HTML formatted alerts
-  def  edit_contact(id, options={})
+  def  edit(id, options={})
     args = {contactId: id}.merge(options)
     post('editContact', args)
   end
@@ -117,7 +111,7 @@ class Contact < MonitisClient
   # === Required arguments
   # * id - contact ID
   # * confirmation_key - confirmation key of the contact
-  def confirm_contact(id, confirmation_key)
+  def confirm(id, confirmation_key)
     post('confirmContact', contactId: id, confirmationKey: confirmation_key)
   end
 
@@ -125,7 +119,7 @@ class Contact < MonitisClient
   #
   # === Required arguments
   # * contact_id - ID of the contact to activate
-  def activate_contact(contact_id)
+  def activate(contact_id)
     post('contactActivate', contactId: contact_id)
   end
 
@@ -133,12 +127,12 @@ class Contact < MonitisClient
   #
   # === Required arguments
   # * contact_id - ID of the contact to deactivate
-  def deactivate_contact(contact_id)
+  def deactivate(contact_id)
     post('contactDeactivate', contactId: contact_id)
   end
 
   # Get all groups of contacts for the user
-  def contact_groups()
+  def groups()
     get('contactGroupList')
   end
 
