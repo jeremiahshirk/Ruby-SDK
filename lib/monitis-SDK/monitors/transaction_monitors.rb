@@ -8,12 +8,13 @@ class TransactionMonitors < MonitisClient
   #
   # === Required arguments
   # * monitor_ids - comma separated list of monitors to suspend
+  #   If nil or an empty string, then optional arguments will be used
   #
   # === Optional arguments
   # * tags - transaction monitors with this tag will be suspended
   def suspend(monitor_ids, options={})
     # pass in nil for monitor_ids to use tag in options
-    if monitor_ids
+    if monitor_ids && monitor_ids != ''
       monitor_ids = monitor_ids.join(',') if monitor_ids.class == Array
       args = {monitorIds: monitor_ids}.merge(options)
     else
@@ -25,13 +26,14 @@ class TransactionMonitors < MonitisClient
   # Activate transaction monitors
   #
   # === Required arguments
-  # * monitor_ids - comma separated list of monitors to activate
+  # * monitor_ids - comma separated list of monitors to activate.
+  #   If nil or an empty string, then optional arguments will be used
   #
   # === Optional arguments
   # * tags - transaction monitors with this tag will be activated
   def activate(monitor_ids, options={})
-    # pass in nil for monitor_ids to use tag in options
-    if monitor_ids
+    # pass in nil or '' for monitor_ids to use tag in options
+    if monitor_ids && monitor_ids != ''
       monitor_ids = monitor_ids.join(',') if monitor_ids.class == Array
       args = {monitorIds: monitor_ids}.merge(options)
     else

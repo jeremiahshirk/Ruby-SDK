@@ -51,7 +51,7 @@ class Base
     else
       @endpoint = use_production ? "http://www.monitis.com/customMonitorApi" : "http://sandbox.monitis.com/customMonitorApi"
     end
-    @authtoken = getAuthToken
+    @authtoken = getAuthToken if @validation == 'token'
   end
 
   # Monitis API HTTP GET, unparsed response

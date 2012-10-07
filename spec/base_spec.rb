@@ -18,7 +18,7 @@ describe Base do
   it 'should create implicit API POST methods' do
     contacts = @prod.contacts
     contact_id = contacts[1]['contactId']
-    response = @prod.edit_contact(contact_id)
+    response = @prod.edit(contact_id)
     response['status'].should == 'ok'
   end
 
