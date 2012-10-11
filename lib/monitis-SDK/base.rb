@@ -2,6 +2,7 @@ require 'httparty'
 require 'crack'
 require 'openssl'
 require 'base64'
+require 'logger'
 
 # Use Syck engine for parsing JSON responses
 YAML::ENGINE.yamler = "syck"
@@ -11,10 +12,18 @@ class Base
 
   # default URL for Monitis API
   BASE_URL = "http://www.monitis.com/api"
+  # default Custom URL for Monitis API
+  CUSTOM_BASE_URL = "http://www.monitis.com/customMonitorApi"
   # default URL for Monitis API sandbox
   SANDBOX_URL = "http://sandbox.monitis.com/api"
+  # default Custom URL for Monitis API sandbox
+  CUSTOM_SANDBOX_URL = "http://sandbox.monitis.com/customMonitorApi"
   # Monitis API version
   VERSION = "2"
+  # Default log level
+  LOGLEVEL = Logger::DEBUG
+  # Default log file
+  LOGFILE = "monitis-SDK.log"
   # Set Monitis.debug to true to enable debugging output
   debug = false
 
@@ -42,16 +51,24 @@ class Base
   #   Default is false.
   # * use_custom_monitor - Use the Custom Monitor endpoint if true, or the
   #   standard endpoint otherwise. Default is false.
-  def initialize(apikey, secretkey, use_production = false, use_custom_monitor = false)
+  def initialize(apikey, secretkey, use_production = false, 
+                 use_custom_monitor = false, options = {})
     @apikey, @secretkey = apikey, secretkey
     @validation = 'HMACSHA1'
     # @validation = 'token'
     if use_custom_monitor == false
       @endpoint = use_production ? BASE_URL : SANDBOX_URL
     else
-      @endpoint = use_production ? "http://www.monitis.com/customMonitorApi" : "http://sandbox.monitis.com/customMonitorApi"
+      @endpoint = use_production ? CUSTOM_BASE_URL : CUSTOM_SANDBOX_URL
     end
     @authtoken = getAuthToken if @validation == 'token'
+
+    # logging
+    @logfile = options.fetch(:logfile, LOGFILE)
+    @loglevel = options.fetch(:loglevel, LOGLEVEL)
+    @logger = Logger.new(@logfile)
+    @logger.level = @loglevel
+
   end
 
   # Monitis API HTTP GET, unparsed response
@@ -67,8 +84,13 @@ class Base
       raise "GET options must be Hash-like"
     end
     query = build_request(action, options)
+    # @logger.debug("GET QUERY\n#{PP::pp(query, '')}")
+    @logger.debug("GET #{action}(#{options})")
     pp query if @debug
     response = HTTParty.get @endpoint, query: query
+    unless response.success?
+      @logger.error("HTTP error: #{response}")
+    end
     pp response if @debug
     response
   end
@@ -93,6 +115,10 @@ class Base
     else
       result = parsed
     end
+    # File.open(@logfile, 'w+') do |f|
+    #   PP::pp(result, f, 78)
+    # end
+    @logger.debug("RESPONSE\n#{PP::pp(result, '')}")
     monitis_result result
   end
 
@@ -109,8 +135,13 @@ class Base
       raise "POST options must be Hash-like"
     end
     body = build_request(action, options)
+    # @logger.debug("POST BODY\n#{PP::pp(body, '')}")
+    @logger.debug("POST #{action}(#{options})")
     # pp body if @debug
     response = HTTParty.post @endpoint, body: body
+    unless response.success?
+      @logger.error("HTTP error: #{response}")
+    end
     if @debug
       pp response.request
       pp response.body
@@ -138,6 +169,7 @@ class Base
     else
       result = parsed
     end
+    @logger.debug("RESPONSE\n#{PP::pp(result, '')}")
     monitis_result result
   end
 
