@@ -49,3 +49,5 @@ tmtags
 
 # To make development easier for me
 custom_monitor_example.rb
+
+/monitis-SDK.log
