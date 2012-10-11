@@ -110,9 +110,6 @@ class ExternalMonitors < MonitisClient
   end
 
   # List external monitors
-  #
-  # === Required arguments
-  #
   # === Optional arguments
   # * tag - monitors with this tag will be returned
   def monitors(tag=nil)
