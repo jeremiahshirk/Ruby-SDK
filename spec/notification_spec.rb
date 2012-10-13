@@ -20,24 +20,21 @@ describe Notification do
 
   it 'should get notification rules' do
     args = {monitorId: @monitor_id, monitorType: 'custom'}
-    result = @notification.notification_rules(args)
+    result = @notification.rules(args)
     result.class.should == Array
   end
 
   it 'should add notification rules' do
-    result = @notification.add_notification_rule(
-      @monitor_id, 'custom', 'always', 0, 0, 5, 'equals', contactId: @contact_id,
-      paramName: 't', paramValue: '1')
+    result = @notification.add(@monitor_id, 'custom', 'always', 0, 0, 5,
+      'equals', contactId: @contact_id, paramName: 't', paramValue: '1')
     result['status'].should == 'ok'
   end
 
   it 'should delete notification rules' do
     # @notification.debug = true
-    @notification.add_notification_rule(
-      @monitor_id, 'custom', 'always', 0, 0, 5, 'equals', contactId: @contact_id,
-      paramName: 't', paramValue: '1')
-    result = @notification.delete_notification_rule(
-      @contact_id, @monitor_id, 'custom')
+    @notification.add(@monitor_id, 'custom', 'always', 0, 0, 5, 'equals',
+      contactId: @contact_id, paramName: 't', paramValue: '1')
+    result = @notification.delete(@contact_id, @monitor_id, 'custom')
     result['status'].should == 'ok'
   end
 

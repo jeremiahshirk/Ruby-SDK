@@ -59,9 +59,8 @@ class Notification < MonitisClient
   #   result parameter the value of which indicates the failure.
   # * paramValue - Required for monitorType custom. The result value needed to
   #   trigger the notification.
-  def add_notification_rule(id, type, period, notify_backup, 
-                            continuous_alerts, failure_count, 
-                            comparing_method, options={})
+  def add(id, type, period, notify_backup, continuous_alerts, failure_count,
+          comparing_method, options={})
     args = {
       monitorId: id, monitorType: type, period: period,
       notifyBackup: notify_backup, continuousAlerts: continuous_alerts, 
@@ -88,7 +87,7 @@ class Notification < MonitisClient
   #   agentPingTest,
   #   agentHttpTest,
   #   custom
-  def delete_notification_rule(contact_ids, monitor_id, monitor_type)
+  def delete(contact_ids, monitor_id, monitor_type)
     contact_ids = contact_ids.join(',') if contact_ids.class == Array
     args = {contactIds: contact_ids, 
             monitorId: monitor_id,
@@ -113,7 +112,7 @@ class Notification < MonitisClient
   #   agentPingTest,
   #   agentHttpTest,
   #   custom
-  def notification_rules(options={})
+  def rules(options={})
     get('getNotificationRules', options)
   end
 end
