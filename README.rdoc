@@ -17,7 +17,7 @@ See the examples directory of this gem for example code
 
 == Copyright
 
-Copyright (c) 2012 Ankur. See LICENSE.txt for
+Copyright (c) 2012 Monitis. See LICENSE.txt for
 further details.
 
 == About Monitis

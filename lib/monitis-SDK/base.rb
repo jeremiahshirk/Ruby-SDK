@@ -21,7 +21,7 @@ class Base
   # Monitis API version
   VERSION = "2"
   # Default log level
-  LOGLEVEL = Logger::DEBUG
+  LOGLEVEL = Logger::INFO
   # Default log file
   LOGFILE = "monitis-SDK.log"
   # Set Monitis.debug to true to enable debugging output
@@ -317,7 +317,7 @@ class MonitisClient < Base
     apikey = options.fetch(:apikey, ENV[apikey_env_name])
     secretkey = options.fetch(:apikey, ENV[secretkey_env_name])
 
-    super(apikey, secretkey, use_production, use_custom_monitor)
+    super(apikey, secretkey, use_production, use_custom_monitor, options)
   end
 end
 

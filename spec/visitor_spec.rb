@@ -8,7 +8,9 @@ end
 
 describe VisitorTrackerMonitors do
   before :each do
-    @mon = self.described_class.new(use_production: true)
+    init_args = {use_production: true, loglevel: Logger::DEBUG, 
+                 logfile: 'visitor_tracker.log'}
+    @mon = self.described_class.new(init_args)
   end
 
   it 'should get results for a visitor tracker' do
