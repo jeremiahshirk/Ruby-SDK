@@ -146,7 +146,7 @@ class ExternalMonitors < MonitisClient
   # * timezone - offset relative to GMT, in minutes, 
   #   used to show results in the timezone of the user
   # * locationIds - comma separated ids of locations for which results should
-  #    be retrieved
+  #   be retrieved
   def results(test_id, day, month, year, options={})
     args = {testId: test_id, day: day, month: month, year: year}
            .merge(options)

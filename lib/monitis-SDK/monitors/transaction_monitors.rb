@@ -73,7 +73,7 @@ class TransactionMonitors < MonitisClient
   # * timezone - offset relative to GMT, in minutes, 
   #   used to show results in the timezone of the user
   # * locationIds - comma separated ids of locations for which results should
-  #    be retrieved
+  #   be retrieved
   def results(monitor_id, year, month, day, options={})
     args = {monitorId: monitor_id, year: year, month: month, day: day}
            .merge(options)
