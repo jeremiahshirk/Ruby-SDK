@@ -1,10 +1,7 @@
+require 'spec_helper'
 require 'monitis-SDK'
 require 'securerandom'
 require 'time'
-
-def temp_name()
-  "test_#{SecureRandom.hex 4}"
-end
 
 describe VisitorTrackerMonitors do
   before :each do

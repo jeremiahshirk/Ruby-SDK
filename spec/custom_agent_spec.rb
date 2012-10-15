@@ -1,14 +1,7 @@
+require 'spec_helper'
 require 'monitis-SDK'
 require 'securerandom'
 require 'time'
-
-def temp_name()
-  "test_#{SecureRandom.hex 4}"
-end
-
-def checktime()
-  Time::now.strftime('%s000')
-end
 
 describe CustomAgent do
   before :each do
@@ -64,4 +57,10 @@ describe CustomAgent do
     result.class.should == Array
   end
 
+  it 'should get info for an agent' do
+    id = @temp_agent_ids.first
+    result = @agent.info(id)
+    result['id'].should == id.to_s
+  end
+  
 end

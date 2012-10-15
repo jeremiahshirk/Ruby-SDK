@@ -14,7 +14,7 @@ class VisitorTrackerMonitors < MonitisClient
   #
   # === Optional arguments
   # * timezoneoffset - offset relative to GMT, in minutes, 
-  #   used to show results in the timezone of the user
+  #   used to show results in the timezone of the user 
   def results(site_id, year, month, day, options={})
     args = {siteId: site_id, year: year, month: month, day:day}.merge(options)
     get('visitorTrackingResults', args)

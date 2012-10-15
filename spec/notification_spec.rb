@@ -1,9 +1,6 @@
+require 'spec_helper'
 require 'monitis-SDK'
 require 'securerandom'
-
-def temp_name()
-  "test_#{SecureRandom.hex 4}"
-end
 
 describe Notification do
   before :each do

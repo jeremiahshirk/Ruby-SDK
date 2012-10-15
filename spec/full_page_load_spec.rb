@@ -1,17 +1,14 @@
+require 'spec_helper'
 require 'monitis-SDK'
 require 'securerandom'
 require 'time'
 
-def temp_name()
-  "test_#{SecureRandom.hex 4}"
-end
-
 describe FullPageLoadMonitors do
   before :each do
     @mon = self.described_class.new(use_production: true)
-    name = tag = temp_name
+    name = @tag = temp_name
     url = "http://#{temp_name}.wordpress.com"
-    temp_mon = @mon.add(name, tag, [1,2], [3,3], url, 5000)
+    temp_mon = @mon.add(name, @tag, [1,2], [3,3], url, 5000)
     @mon_ids = [temp_mon['data']['testId']]
   end
 
@@ -50,6 +47,16 @@ describe FullPageLoadMonitors do
 
   it 'should suspend a full page load monitor' do
     result = @mon.suspend @mon_ids.first
+    result.status.should == 'ok'
+  end
+
+  it 'should activate full page load monitors by tag' do
+    result = @mon.activate(nil, tag: @tag)
+    result.status.should == 'ok'
+  end
+
+  it 'should suspend full page load monitors by tag' do
+    result = @mon.suspend(nil, tag: @tag)
     result.status.should == 'ok'
   end
 

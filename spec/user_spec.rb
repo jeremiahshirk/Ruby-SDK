@@ -1,3 +1,4 @@
+require 'spec_helper'
 require 'monitis-SDK'
 
 describe User do
@@ -21,6 +22,11 @@ describe User do
   it 'should be able to get an authtoken' do
     authtoken = @user.authToken @secretkey
     authtoken.should match /[A-Z0-9]{23,26}/
+  end
+
+  it 'should get the userkey for a user' do
+    key = @user.userkey @username, @password
+    key.should match /[A-Z0-9]{23,26}/
   end
 
 end

@@ -1,10 +1,7 @@
+require 'spec_helper'
 require 'monitis-SDK'
 require 'securerandom'
 require 'time'
-
-def temp_name()
-  "test_#{SecureRandom.hex 4}"
-end
 
 describe Agents do
   before :each do
@@ -28,6 +25,10 @@ describe Agents do
     result.has_key?('agents').should == true
   end
 
+  it 'should raise an error if there are no args to snapshot' do
+    expect { @agents.snapshot }.to raise_exception
+  end
+
   it 'should get a snapshot for a specific agent' do
     key = @agents.agents.first['key']
     result = @agents.snapshot(agentKey: key)
@@ -37,6 +38,12 @@ describe Agents do
   it 'should delete an agent' do
     # we can't create an agent, so try to delete one that won't exist
     result = @agents.delete([0,1])
+    result.status.should == 'invalid agent'
+  end
+
+  it 'should delete an agent by Hash' do
+    # we can't create an agent, so try to delete one that won't exist
+    result = @agents.delete(agentIds: '0,1')
     result.status.should == 'invalid agent'
   end
 

@@ -1,10 +1,7 @@
+require 'spec_helper'
 require 'monitis-SDK'
 require 'securerandom'
 require 'time'
-
-def temp_name()
-  "test_#{SecureRandom.hex 4}"
-end
 
 describe CPUMonitors do
   before :each do

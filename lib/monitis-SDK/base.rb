@@ -142,10 +142,10 @@ class Base
     unless response.success?
       @logger.error("HTTP error: #{response}")
     end
-    if @debug
-      pp response.request
-      pp response.body
-    end
+    # if @debug
+    #   pp response.request
+    #   pp response.body
+    # end
     response
   end
 
@@ -228,15 +228,18 @@ class Base
   #   result
   # end  
 
-  def status_warning(r_hash)
-    # return the warning message on any non-'ok' status
-    if   ((r_hash.has_key?('status')) && (r_hash['status'] != 'ok'))
-      result = r_hash['status']
-    else
-      result = nil
-    end
-    result
-  end
+  # Turns out we cannot use this, as many results don't include status
+  # Instead, use raise_api_errors, which only looks for returned hashes with
+  # an 'error' key
+  # def status_warning(r_hash)
+  #   # return the warning message on any non-'ok' status
+  #   if   ((r_hash.has_key?('status')) && (r_hash['status'] != 'ok'))
+  #     result = r_hash['status']
+  #   else
+  #     result = nil
+  #   end
+  #   result
+  # end
 
   def raise_api_errors(monitis_response)
     # some valid API responses return JSON arrays
@@ -283,7 +286,7 @@ class Base
          :action => action })
 
     if @validation == 'token'
-      options.merge!(authToken: @authtoken)
+      options.merge!(authToken: getAuthToken)
     elsif @validation == 'HMACSHA1'
       options.merge!(checksum: checksum(key, options))
     else
@@ -326,11 +329,11 @@ class MonitisResponse < Hash
 
   # Return status message
   def status()
-    self['status']
+    self.fetch('status', nil)
   end
 
   # Return error message
   def error()
-    self['error']
+    self.fetch('error', nil)
   end
 end

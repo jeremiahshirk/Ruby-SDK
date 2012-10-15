@@ -38,9 +38,4 @@ class InternalMonitors < MonitisClient
     post('deleteInternalMonitors', args)
   end
 
-  # List internal monitors
-  def monitors(options={})
-    get('internalMonitors', options)
-  end
-
 end  

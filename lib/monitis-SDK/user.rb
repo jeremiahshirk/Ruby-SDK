@@ -10,7 +10,7 @@ class User < MonitisClient
   # === Required arguments
   # * username
   # * password
-  def User.getUserKey(username, password)
+  def userkey(username, password)
     query = { :action => "userkey", :userName => username,
               :password => password}
     res = get("userkey", query) { |x| x['userkey']}

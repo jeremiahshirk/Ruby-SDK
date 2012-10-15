@@ -1,10 +1,7 @@
+require 'spec_helper'
 require 'monitis-SDK'
 require 'securerandom'
 require 'time'
-
-def temp_name()
-  "test_#{SecureRandom.hex 4}"
-end
 
 describe ExternalMonitors do
   before :each do
@@ -50,6 +47,26 @@ describe ExternalMonitors do
     result.is_ok?.should == true
   end
 
+  it 'should suspend an external monitor by Hash' do
+    result = @ext.suspend(monitorIds: @ext_ids.first)
+    result.is_ok?.should == true
+  end
+
+  it 'should activate an external monitor by Hash' do
+    result = @ext.activate(monitorIds: @ext_ids.first)
+    result.is_ok?.should == true
+  end
+
+  it 'should suspend an external monitor by Array' do
+    result = @ext.suspend([@ext_ids.first])
+    result.is_ok?.should == true
+  end
+
+  it 'should activate an external monitor by Array' do
+    result = @ext.activate([@ext_ids.first])
+    result.is_ok?.should == true
+  end
+
   it 'should get a list of locations' do
     result = @ext.locations
     result.class.should == Array
@@ -83,4 +100,8 @@ describe ExternalMonitors do
     result.class.should == Array
   end
   
+  it 'should get the tags for external monitors' do
+    result = @ext.tags
+    result.has_key?('tags').should == true
+  end
 end
